@@ -6,29 +6,19 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: immunization
     ports:
+      # nếu cổng 3306 trên Windows đã bận, đổi "3306:3306" -> "3307:3306"
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 3s
       retries: 20
 
-  adminer:
-    image: adminer
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-
-  api:
+  app:
     build: .
-    environment:
-      DATABASE_URL: mysql://root:root@db:3306/immunization
-      JWT_SECRET: supersecret
-      PORT: 3000
-      NODE_ENV: production
+    env_file: .env
     ports:
       - "3000:3000"
     depends_on:

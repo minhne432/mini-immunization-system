@@ -21,14 +21,17 @@ enum AppointmentStatus {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  name        String?
-  email       String       @unique
-  password    String
-  role        Role         @default(USER)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  doseRecords DoseRecord[]
+  id               Int          @id @default(autoincrement())
+  name             String?
+  email            String       @unique
+  password         String
+  role             Role         @default(USER)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  // Quan hệ
+  doseRecords      DoseRecord[]       // đối ứng với DoseRecord.staff
+  createdPatients  Patient[]          // ⬅️ THÊM: đối ứng với Patient.createdBy
 }
 
 model Center {
@@ -51,8 +54,10 @@ model Patient {
   guardianName String?
   center       Center?       @relation(fields: [centerId], references: [id])
   centerId     Int?
+
   createdBy    User?         @relation(fields: [createdById], references: [id])
   createdById  Int?
+
   appointments Appointment[]
   doseRecords  DoseRecord[]
   createdAt    DateTime      @default(now())
@@ -70,15 +75,17 @@ model Vaccine {
 }
 
 model VaccineLot {
-  id         Int      @id @default(autoincrement())
-  vaccine    Vaccine  @relation(fields: [vaccineId], references: [id])
+  id         Int         @id @default(autoincrement())
+  vaccine    Vaccine     @relation(fields: [vaccineId], references: [id])
   vaccineId  Int
   lotNo      String
   expiryDate DateTime
   quantity   Int
-  center     Center   @relation(fields: [centerId], references: [id])
+  center     Center      @relation(fields: [centerId], references: [id])
   centerId   Int
-  createdAt  DateTime @default(now())
+  createdAt  DateTime    @default(now())
+
+  doseRecords DoseRecord[]        // ⬅️ THÊM: đối ứng với DoseRecord.lot
 }
 
 model Appointment {
@@ -97,22 +104,26 @@ model Appointment {
 }
 
 model DoseRecord {
-  id               Int       @id @default(autoincrement())
-  patient          Patient   @relation(fields: [patientId], references: [id])
+  id               Int        @id @default(autoincrement())
+  patient          Patient    @relation(fields: [patientId], references: [id])
   patientId        Int
-  vaccine          Vaccine   @relation(fields: [vaccineId], references: [id])
+  vaccine          Vaccine    @relation(fields: [vaccineId], references: [id])
   vaccineId        Int
   doseNo           Int
-  center           Center    @relation(fields: [centerId], references: [id])
+  center           Center     @relation(fields: [centerId], references: [id])
   centerId         Int
+
   lot              VaccineLot @relation(fields: [lotId], references: [id])
   lotId            Int
-  injectedAt       DateTime  @default(now())
+
+  injectedAt       DateTime   @default(now())
   notes            String?
   adverseEventJson Json?
-  staff            User?     @relation(fields: [staffId], references: [id])
+
+  staff            User?      @relation(fields: [staffId], references: [id])
   staffId          Int?
-  createdAt        DateTime  @default(now())
+
+  createdAt        DateTime   @default(now())
 }
 
 model TempLog {
