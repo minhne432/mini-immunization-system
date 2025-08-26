@@ -1,0 +1,124 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  USER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String?
+  email       String       @unique
+  password    String
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  doseRecords DoseRecord[]
+}
+
+model Center {
+  id            Int           @id @default(autoincrement())
+  name          String
+  address       String
+  vaccineLots   VaccineLot[]
+  appointments  Appointment[]
+  doseRecords   DoseRecord[]
+  tempLogs      TempLog[]
+  patients      Patient[]
+}
+
+model Patient {
+  id           Int           @id @default(autoincrement())
+  fullName     String
+  dob          DateTime
+  sex          String
+  phone        String
+  guardianName String?
+  center       Center?       @relation(fields: [centerId], references: [id])
+  centerId     Int?
+  createdBy    User?         @relation(fields: [createdById], references: [id])
+  createdById  Int?
+  appointments Appointment[]
+  doseRecords  DoseRecord[]
+  createdAt    DateTime      @default(now())
+}
+
+model Vaccine {
+  id           Int           @id @default(autoincrement())
+  name         String
+  manufacturer String?
+  doses        Int?
+  scheduleJson Json?
+  lots         VaccineLot[]
+  appointments Appointment[]
+  doseRecords  DoseRecord[]
+}
+
+model VaccineLot {
+  id         Int      @id @default(autoincrement())
+  vaccine    Vaccine  @relation(fields: [vaccineId], references: [id])
+  vaccineId  Int
+  lotNo      String
+  expiryDate DateTime
+  quantity   Int
+  center     Center   @relation(fields: [centerId], references: [id])
+  centerId   Int
+  createdAt  DateTime @default(now())
+}
+
+model Appointment {
+  id        Int                @id @default(autoincrement())
+  patient   Patient            @relation(fields: [patientId], references: [id])
+  patientId Int
+  vaccine   Vaccine            @relation(fields: [vaccineId], references: [id])
+  vaccineId Int
+  doseNo    Int
+  center    Center             @relation(fields: [centerId], references: [id])
+  centerId  Int
+  apptAt    DateTime
+  status    AppointmentStatus  @default(SCHEDULED)
+  notes     String?
+  createdAt DateTime           @default(now())
+}
+
+model DoseRecord {
+  id               Int       @id @default(autoincrement())
+  patient          Patient   @relation(fields: [patientId], references: [id])
+  patientId        Int
+  vaccine          Vaccine   @relation(fields: [vaccineId], references: [id])
+  vaccineId        Int
+  doseNo           Int
+  center           Center    @relation(fields: [centerId], references: [id])
+  centerId         Int
+  lot              VaccineLot @relation(fields: [lotId], references: [id])
+  lotId            Int
+  injectedAt       DateTime  @default(now())
+  notes            String?
+  adverseEventJson Json?
+  staff            User?     @relation(fields: [staffId], references: [id])
+  staffId          Int?
+  createdAt        DateTime  @default(now())
+}
+
+model TempLog {
+  id         Int      @id @default(autoincrement())
+  center     Center   @relation(fields: [centerId], references: [id])
+  centerId   Int
+  recordedAt DateTime @default(now())
+  celsius    Float
+}

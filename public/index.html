@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Immunization System</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
+    input, button { padding: .6rem; margin: .2rem 0; }
+    .card { border: 1px solid #ccc; padding: 1rem; border-radius: .5rem; max-width: 480px; }
+  </style>
+</head>
+<body>
+  <h1>Mini Immunization System</h1>
+  <p>Use Postman/Insomnia to call API, or try quick login below after seeding:</p>
+  <div class="card">
+    <h3>JWT Quick Login</h3>
+    <input id="email" placeholder="email" value="admin@example.com"><br>
+    <input id="password" type="password" placeholder="password" value="admin123"><br>
+    <button onclick="login()">Login</button>
+    <pre id="out"></pre>
+  </div>
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const r = await fetch('/api/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await r.json();
+      document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
